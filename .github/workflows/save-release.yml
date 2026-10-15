@@ -28,6 +28,7 @@ jobs:
           rm -rf parts && mkdir -p parts
           for img in "${images[@]}"; do
             name="${img//\//_}"
+            name="${name//:/_}"
             echo "=== pull $img ==="
             docker pull "$img"
             echo "=== save $img ==="
@@ -40,5 +41,5 @@ jobs:
           echo "=== parts ==="
           ls -lh parts/
           echo "=== upload ==="
-          gh release upload "v1.17.1" parts/* --clobber
+          gh release upload "v1.17.1" parts/* -R seeker-you/dify-images-relay --clobber
           echo "ALL UPLOADED"
