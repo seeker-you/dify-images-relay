@@ -1,0 +1,44 @@
+name: Save Images to Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save, split, and upload images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          images=(
+            "langgenius/dify-api:1.17.1"
+            "langgenius/dify-web:1.17.1"
+            "langgenius/dify-plugin-daemon:0.6.10-local"
+            "langgenius/dify-agent-backend:1.17.1"
+            "langgenius/dify-agent-local-sandbox:1.17.1"
+            "postgres:15-alpine"
+            "nginx:latest"
+            "ubuntu/squid:latest"
+          )
+          rm -rf parts && mkdir -p parts
+          for img in "${images[@]}"; do
+            name="${img//\//_}"
+            echo "=== pull $img ==="
+            docker pull "$img"
+            echo "=== save $img ==="
+            docker save "$img" -o "${name}.tar"
+            echo "=== split $img ==="
+            split -b 1700m -d "${name}.tar" "parts/${name}.part"
+            rm -f "${name}.tar"
+            docker rmi "$img" >/dev/null 2>&1 || true
+          done
+          echo "=== parts ==="
+          ls -lh parts/
+          echo "=== upload ==="
+          gh release upload "v1.17.1" parts/* --clobber
+          echo "ALL UPLOADED"
