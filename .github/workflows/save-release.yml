@@ -40,6 +40,8 @@ jobs:
           done
           echo "=== parts ==="
           ls -lh parts/
+          echo "=== create release ==="
+          gh release create "v1.17.1" --title "Dify 1.17.1 images (split tars)" --notes "docker load 用分卷 tar，合并后 docker load" -R seeker-you/dify-images-relay || echo "release may already exist"
           echo "=== upload ==="
           gh release upload "v1.17.1" parts/* -R seeker-you/dify-images-relay --clobber
           echo "ALL UPLOADED"
